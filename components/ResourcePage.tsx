@@ -118,11 +118,20 @@ export function ResourcePage({
   function handleChange(name: string, value: string) {
     setValues((current) => {
       const next = { ...current, [name]: value };
-      fields.forEach((field) => {
-        if (field.dependency?.filterBy?.field === name) {
-          next[field.name] = "";
-        }
-      });
+      const cleared = new Set([name]);
+      let changed = true;
+
+      while (changed) {
+        changed = false;
+        fields.forEach((field) => {
+          const parentField = field.dependency?.filterBy?.field;
+          if (parentField && cleared.has(parentField) && next[field.name] !== "") {
+            next[field.name] = "";
+            cleared.add(field.name);
+            changed = true;
+          }
+        });
+      }
 
       return next;
     });

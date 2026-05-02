@@ -4,13 +4,15 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Sri Lanka Location Admin",
-  description: "CRUD admin dashboard for provinces, districts, DS divisions, and cities.",
+  description: "CRUD admin dashboard for Sri Lanka public location data.",
 };
 
 const navItems = [
   { href: "/provinces", label: "Provinces" },
   { href: "/districts", label: "Districts" },
   { href: "/divisional-secretariats", label: "Divisional Secretariats" },
+  { href: "/grama-niladhari-divisions", label: "GNDs" },
+  { href: "/villages", label: "Villages" },
   { href: "/cities", label: "Cities" },
 ];
 

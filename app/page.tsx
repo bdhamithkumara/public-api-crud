@@ -4,6 +4,8 @@ const cards = [
   { href: "/provinces", title: "Provinces", body: "Create and maintain province names in English, Sinhala, and Tamil." },
   { href: "/districts", title: "Districts", body: "Manage districts with a province dropdown. This is the fully worked example page." },
   { href: "/divisional-secretariats", title: "Divisional Secretariats", body: "Attach each DS division to the correct district." },
+  { href: "/grama-niladhari-divisions", title: "Grama Niladhari Divisions", body: "Manage GND records under province, district, and DS division." },
+  { href: "/villages", title: "Villages", body: "Manage village names under the correct GND." },
   { href: "/cities", title: "Cities", body: "Manage city names, sub names, postcodes, and coordinates." },
 ];
 

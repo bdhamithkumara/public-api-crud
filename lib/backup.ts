@@ -1,15 +1,24 @@
 ﻿import { Pool, PoolClient } from "pg";
 import { BackupData } from "@/lib/types";
 
-const tableOrder = ["provinces", "districts", "divisional_secretariats", "cities"] as const;
+const tableOrder = [
+  "provinces",
+  "districts",
+  "divisional_secretariats",
+  "grama_niladhari_divisions",
+  "villages",
+  "cities",
+] as const;
 
 type Queryable = Pool | PoolClient;
 
 export async function exportBackup(db: Queryable): Promise<BackupData> {
-  const [provinces, districts, divisionalSecretariats, cities] = await Promise.all([
+  const [provinces, districts, divisionalSecretariats, gramaNiladhariDivisions, villages, cities] = await Promise.all([
     db.query("SELECT * FROM provinces ORDER BY id ASC"),
     db.query("SELECT * FROM districts ORDER BY id ASC"),
     db.query("SELECT * FROM divisional_secretariats ORDER BY id ASC"),
+    db.query("SELECT * FROM grama_niladhari_divisions ORDER BY id ASC"),
+    db.query("SELECT * FROM villages ORDER BY id ASC"),
     db.query("SELECT * FROM cities ORDER BY id ASC"),
   ]);
 
@@ -17,6 +26,8 @@ export async function exportBackup(db: Queryable): Promise<BackupData> {
     provinces: provinces.rows,
     districts: districts.rows,
     divisional_secretariats: divisionalSecretariats.rows,
+    grama_niladhari_divisions: gramaNiladhariDivisions.rows,
+    villages: villages.rows,
     cities: cities.rows,
   };
 }
@@ -51,6 +62,24 @@ export async function importBackup(db: Pool, data: BackupData) {
          VALUES ($1, $2, $3, $4, $5)
          ON CONFLICT (id) DO NOTHING`,
         [ds.id, ds.district_id, ds.ds_en, ds.ds_si, ds.ds_ta],
+      );
+    }
+
+    for (const gnd of data.grama_niladhari_divisions ?? []) {
+      await client.query(
+        `INSERT INTO grama_niladhari_divisions (id, divisional_secretariat_id, gnd_en, gnd_si, gnd_ta)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (id) DO NOTHING`,
+        [gnd.id, gnd.divisional_secretariat_id, gnd.gnd_en, gnd.gnd_si, gnd.gnd_ta],
+      );
+    }
+
+    for (const village of data.villages ?? []) {
+      await client.query(
+        `INSERT INTO villages (id, gnd_id, village_en, village_si, village_ta)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (id) DO NOTHING`,
+        [village.id, village.gnd_id, village.village_en, village.village_si, village.village_ta],
       );
     }
 

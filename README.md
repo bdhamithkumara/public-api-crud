@@ -4,7 +4,7 @@ A simple Next.js App Router admin dashboard for Sri Lankan public location data 
 
 ## Tech Stack
 
-- Next.js 14 App Router
+- Next.js App Router
 - PostgreSQL / Neon
 - `pg` library, no ORM
 - Tailwind CSS
@@ -21,6 +21,10 @@ app/
     districts/[id]/route.ts
     divisional-secretariats/route.ts
     divisional-secretariats/[id]/route.ts
+    grama-niladhari-divisions/route.ts
+    grama-niladhari-divisions/[id]/route.ts
+    villages/route.ts
+    villages/[id]/route.ts
     cities/route.ts
     cities/[id]/route.ts
     export/route.ts
@@ -28,6 +32,8 @@ app/
   provinces/page.tsx
   districts/page.tsx
   divisional-secretariats/page.tsx
+  grama-niladhari-divisions/page.tsx
+  villages/page.tsx
   cities/page.tsx
 components/
   AdminForm.tsx
@@ -85,9 +91,11 @@ Open `http://localhost:3000`.
 - `/provinces`
 - `/districts`
 - `/divisional-secretariats`
+- `/grama-niladhari-divisions`
+- `/villages`
 - `/cities`
 
-`/districts` is the fully worked example page. It uses a province dropdown instead of manual ID entry. The DS and cities pages use the same pattern with district dropdowns.
+Dropdowns are chained where needed, so child records are selected through their parent geography instead of manual ID entry.
 
 ## API Routes
 
@@ -103,6 +111,8 @@ Resources:
 - `provinces`
 - `districts`
 - `divisional-secretariats`
+- `grama-niladhari-divisions`
+- `villages`
 - `cities`
 
 Backup routes:
@@ -125,6 +135,8 @@ The output shape is:
   "provinces": [],
   "districts": [],
   "divisional_secretariats": [],
+  "grama_niladhari_divisions": [],
+  "villages": [],
   "cities": []
 }
 ```
@@ -140,7 +152,7 @@ npm run import:data
 The import inserts in the correct order:
 
 ```txt
-provinces -> districts -> divisional_secretariats -> cities
+provinces -> districts -> divisional_secretariats -> grama_niladhari_divisions -> villages -> cities
 ```
 
 It uses `INSERT ... ON CONFLICT (id) DO NOTHING` and resets all `SERIAL` sequences afterward with `setval()`.
