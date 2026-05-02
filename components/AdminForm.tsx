@@ -14,6 +14,15 @@ export type FormField = {
   required?: boolean;
   placeholder?: string;
   options?: SelectOption[];
+  dependency?: {
+    source: string;
+    valueKey: string;
+    labelKey: string;
+    filterBy?: {
+      field: string;
+      key: string;
+    };
+  };
 };
 
 type AdminFormProps = {

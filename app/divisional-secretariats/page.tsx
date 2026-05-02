@@ -2,7 +2,27 @@
 import { ResourcePage } from "@/components/ResourcePage";
 
 const fields: FormField[] = [
-  { name: "district_id", label: "District", type: "select", required: true, options: [] },
+  {
+    name: "province_id",
+    label: "Province",
+    type: "select",
+    required: true,
+    options: [],
+    dependency: { source: "provinces", valueKey: "id", labelKey: "name_en" },
+  },
+  {
+    name: "district_id",
+    label: "District",
+    type: "select",
+    required: true,
+    options: [],
+    dependency: {
+      source: "districts",
+      valueKey: "id",
+      labelKey: "name_en",
+      filterBy: { field: "province_id", key: "province_id" },
+    },
+  },
   { name: "ds_en", label: "DS Name EN", required: true },
   { name: "ds_si", label: "DS Name SI", required: true },
   { name: "ds_ta", label: "DS Name TA", required: true },
@@ -10,6 +30,7 @@ const fields: FormField[] = [
 
 const columns = [
   { key: "id", label: "ID" },
+  { key: "province_name", label: "Province" },
   { key: "district_name", label: "District" },
   { key: "ds_en", label: "DS Name EN" },
   { key: "ds_si", label: "DS Name SI" },
@@ -24,21 +45,8 @@ export default function DivisionalSecretariatsPage() {
       endpoint="/api/divisional-secretariats"
       fields={fields}
       columns={columns}
-      initialValues={{ district_id: "", ds_en: "", ds_si: "", ds_ta: "" }}
-      dependencyEndpoints={{ districts: "/api/districts" }}
-      mapDependencies={(baseFields, dependencies) =>
-        baseFields.map((field) =>
-          field.name === "district_id"
-            ? {
-                ...field,
-                options: (dependencies.districts ?? []).map((district) => ({
-                  value: Number(district.id),
-                  label: String(district.name_en),
-                })),
-              }
-            : field,
-        )
-      }
+      initialValues={{ province_id: "", district_id: "", ds_en: "", ds_si: "", ds_ta: "" }}
+      dependencyEndpoints={{ provinces: "/api/provinces", districts: "/api/districts" }}
     />
   );
 }

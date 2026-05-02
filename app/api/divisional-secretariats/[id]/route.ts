@@ -2,15 +2,25 @@
 import { pool } from "@/lib/db";
 import { jsonError, requiredNumber, requiredString } from "@/lib/api";
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
+export async function PUT(request: Request, { params }: RouteContext) {
   try {
+    const { id } = await params;
     const body = await request.json();
+    const provinceId = requiredNumber(body.province_id, "Province");
+    const districtId = requiredNumber(body.district_id, "District");
+    const district = await pool.query("SELECT id FROM districts WHERE id = $1 AND province_id = $2", [districtId, provinceId]);
+    if (!district.rowCount) return jsonError("District does not belong to the selected province", 400);
+
     const values = [
-      requiredNumber(body.district_id, "District"),
+      districtId,
       requiredString(body.ds_en, "English DS name"),
       requiredString(body.ds_si, "Sinhala DS name"),
       requiredString(body.ds_ta, "Tamil DS name"),
-      Number(params.id),
+      Number(id),
     ];
 
     const { rows } = await pool.query(
@@ -26,9 +36,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params }: RouteContext) {
   try {
-    const { rowCount } = await pool.query("DELETE FROM divisional_secretariats WHERE id = $1", [Number(params.id)]);
+    const { id } = await params;
+    const { rowCount } = await pool.query("DELETE FROM divisional_secretariats WHERE id = $1", [Number(id)]);
     if (!rowCount) return jsonError("Divisional secretariat not found", 404);
     return NextResponse.json({ ok: true });
   } catch (error) {

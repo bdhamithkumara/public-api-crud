@@ -12,7 +12,6 @@ type ResourcePageProps = {
   columns: TableColumn[];
   initialValues: Record<string, string>;
   dependencyEndpoints?: Record<string, string>;
-  mapDependencies?: (fields: FormField[], dependencies: Record<string, Record<string, unknown>[]>) => FormField[];
 };
 
 function readError(payload: unknown, fallback: string) {
@@ -31,7 +30,6 @@ export function ResourcePage({
   columns,
   initialValues,
   dependencyEndpoints = {},
-  mapDependencies,
 }: ResourcePageProps) {
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [values, setValues] = useState<Record<string, string>>(initialValues);
@@ -42,8 +40,24 @@ export function ResourcePage({
   const [dependencies, setDependencies] = useState<Record<string, Record<string, unknown>[]>>({});
 
   const resolvedFields = useMemo(() => {
-    return mapDependencies ? mapDependencies(fields, dependencies) : fields;
-  }, [dependencies, fields, mapDependencies]);
+    return fields.map((field) => {
+      if (!field.dependency) return field;
+
+      let rows = dependencies[field.dependency.source] ?? [];
+      if (field.dependency.filterBy) {
+        const { field: filterField, key } = field.dependency.filterBy;
+        rows = rows.filter((row) => String(row[key] ?? "") === String(values[filterField] ?? ""));
+      }
+
+      return {
+        ...field,
+        options: rows.map((row) => ({
+          value: String(row[field.dependency!.valueKey] ?? ""),
+          label: String(row[field.dependency!.labelKey] ?? ""),
+        })),
+      };
+    });
+  }, [dependencies, fields, values]);
 
   async function loadRows() {
     setLoading(true);
@@ -99,6 +113,19 @@ export function ResourcePage({
     setValues(nextValues);
     setEditingId(Number(row.id));
     setMessage("");
+  }
+
+  function handleChange(name: string, value: string) {
+    setValues((current) => {
+      const next = { ...current, [name]: value };
+      fields.forEach((field) => {
+        if (field.dependency?.filterBy?.field === name) {
+          next[field.name] = "";
+        }
+      });
+
+      return next;
+    });
   }
 
   async function handleSubmit() {
@@ -160,7 +187,7 @@ export function ResourcePage({
         values={values}
         editing={editingId !== null}
         loading={saving}
-        onChange={(name, value) => setValues((current) => ({ ...current, [name]: value }))}
+        onChange={handleChange}
         onSubmit={handleSubmit}
         onCancel={resetForm}
       />

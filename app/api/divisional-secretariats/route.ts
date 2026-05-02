@@ -5,9 +5,14 @@ import { jsonError, requiredNumber, requiredString } from "@/lib/api";
 export async function GET() {
   try {
     const { rows } = await pool.query(`
-      SELECT divisional_secretariats.*, districts.name_en AS district_name
+      SELECT
+        divisional_secretariats.*,
+        districts.province_id,
+        provinces.name_en AS province_name,
+        districts.name_en AS district_name
       FROM divisional_secretariats
       JOIN districts ON districts.id = divisional_secretariats.district_id
+      JOIN provinces ON provinces.id = districts.province_id
       ORDER BY divisional_secretariats.id ASC
     `);
     return NextResponse.json(rows);
@@ -20,8 +25,13 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    const provinceId = requiredNumber(body.province_id, "Province");
+    const districtId = requiredNumber(body.district_id, "District");
+    const district = await pool.query("SELECT id FROM districts WHERE id = $1 AND province_id = $2", [districtId, provinceId]);
+    if (!district.rowCount) return jsonError("District does not belong to the selected province", 400);
+
     const values = [
-      requiredNumber(body.district_id, "District"),
+      districtId,
       requiredString(body.ds_en, "English DS name"),
       requiredString(body.ds_si, "Sinhala DS name"),
       requiredString(body.ds_ta, "Tamil DS name"),

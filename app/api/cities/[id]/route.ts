@@ -2,8 +2,13 @@
 import { pool } from "@/lib/db";
 import { jsonError, optionalNumber, optionalString, requiredNumber, requiredString } from "@/lib/api";
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
+export async function PUT(request: Request, { params }: RouteContext) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const values = [
       requiredNumber(body.district_id, "District"),
@@ -16,7 +21,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       optionalString(body.postcode),
       optionalNumber(body.latitude, "Latitude"),
       optionalNumber(body.longitude, "Longitude"),
-      Number(params.id),
+      Number(id),
     ];
 
     const { rows } = await pool.query(
@@ -43,9 +48,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params }: RouteContext) {
   try {
-    const { rowCount } = await pool.query("DELETE FROM cities WHERE id = $1", [Number(params.id)]);
+    const { id } = await params;
+    const { rowCount } = await pool.query("DELETE FROM cities WHERE id = $1", [Number(id)]);
     if (!rowCount) return jsonError("City not found", 404);
     return NextResponse.json({ ok: true });
   } catch (error) {

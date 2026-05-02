@@ -2,7 +2,14 @@
 import { ResourcePage } from "@/components/ResourcePage";
 
 const fields: FormField[] = [
-  { name: "province_id", label: "Province", type: "select", required: true, options: [] },
+  {
+    name: "province_id",
+    label: "Province",
+    type: "select",
+    required: true,
+    options: [],
+    dependency: { source: "provinces", valueKey: "id", labelKey: "name_en" },
+  },
   { name: "name_en", label: "Name EN", required: true },
   { name: "name_si", label: "Name SI", required: true },
   { name: "name_ta", label: "Name TA", required: true },
@@ -26,19 +33,6 @@ export default function DistrictsPage() {
       columns={columns}
       initialValues={{ province_id: "", name_en: "", name_si: "", name_ta: "" }}
       dependencyEndpoints={{ provinces: "/api/provinces" }}
-      mapDependencies={(baseFields, dependencies) =>
-        baseFields.map((field) =>
-          field.name === "province_id"
-            ? {
-                ...field,
-                options: (dependencies.provinces ?? []).map((province) => ({
-                  value: Number(province.id),
-                  label: String(province.name_en),
-                })),
-              }
-            : field,
-        )
-      }
     />
   );
 }
