@@ -2,7 +2,15 @@
 const path = require("path");
 const { createPool } = require("./db");
 
-const tableOrder = ["provinces", "districts", "divisional_secretariats", "cities"];
+const projectRoot = path.resolve(__dirname, "..");
+const tableOrder = [
+  "provinces",
+  "districts",
+  "divisional_secretariats",
+  "grama_niladhari_divisions",
+  "villages",
+  "cities",
+];
 
 async function resetSequences(client) {
   for (const table of tableOrder) {
@@ -21,7 +29,7 @@ async function main() {
   const client = await pool.connect();
 
   try {
-    const backupPath = path.join(process.cwd(), "backup.json");
+    const backupPath = path.join(projectRoot, "backup.json");
     const backup = JSON.parse(await fs.readFile(backupPath, "utf8"));
 
     await client.query("BEGIN");
@@ -50,6 +58,24 @@ async function main() {
          VALUES ($1, $2, $3, $4, $5)
          ON CONFLICT (id) DO NOTHING`,
         [ds.id, ds.district_id, ds.ds_en, ds.ds_si, ds.ds_ta],
+      );
+    }
+
+    for (const gnd of backup.grama_niladhari_divisions ?? []) {
+      await client.query(
+        `INSERT INTO grama_niladhari_divisions (id, divisional_secretariat_id, gnd_en, gnd_si, gnd_ta)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (id) DO NOTHING`,
+        [gnd.id, gnd.divisional_secretariat_id, gnd.gnd_en, gnd.gnd_si, gnd.gnd_ta],
+      );
+    }
+
+    for (const village of backup.villages ?? []) {
+      await client.query(
+        `INSERT INTO villages (id, gnd_id, village_en, village_si, village_ta)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (id) DO NOTHING`,
+        [village.id, village.gnd_id, village.village_en, village.village_si, village.village_ta],
       );
     }
 

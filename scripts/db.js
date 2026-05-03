@@ -27,9 +27,10 @@ function createPool() {
     throw new Error("DATABASE_URL is missing. Add it to .env.local first.");
   }
 
+  const connectionString = process.env.DATABASE_URL.replace("sslmode=require", "sslmode=verify-full");
+
   return new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL.includes("sslmode=require") ? { rejectUnauthorized: false } : undefined,
+    connectionString,
   });
 }
 
