@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS districts (
 
 CREATE TABLE IF NOT EXISTS divisional_secretariats (
   id SERIAL PRIMARY KEY,
+  province_id INTEGER NOT NULL REFERENCES provinces(id) ON DELETE RESTRICT,
   district_id INTEGER NOT NULL REFERENCES districts(id) ON DELETE RESTRICT,
   ds_en VARCHAR(150) NOT NULL,
   ds_si VARCHAR(150) NOT NULL,
@@ -64,6 +65,7 @@ CREATE TABLE IF NOT EXISTS cities (
 );
 
 CREATE INDEX IF NOT EXISTS idx_districts_province_id ON districts(province_id);
+CREATE INDEX IF NOT EXISTS idx_divisional_secretariats_province_id ON divisional_secretariats(province_id);
 CREATE INDEX IF NOT EXISTS idx_divisional_secretariats_district_id ON divisional_secretariats(district_id);
 CREATE INDEX IF NOT EXISTS idx_grama_niladhari_divisions_ds_id ON grama_niladhari_divisions(divisional_secretariat_id);
 CREATE INDEX IF NOT EXISTS idx_villages_gnd_id ON villages(gnd_id);

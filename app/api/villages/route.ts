@@ -11,6 +11,7 @@ async function gndMatches(gndId: number, divisionalSecretariatId: number, distri
      WHERE grama_niladhari_divisions.id = $1
        AND grama_niladhari_divisions.divisional_secretariat_id = $2
        AND divisional_secretariats.district_id = $3
+       AND divisional_secretariats.province_id = $4
        AND districts.province_id = $4`,
     [gndId, divisionalSecretariatId, districtId, provinceId],
   );
@@ -23,7 +24,7 @@ export async function GET() {
     const { rows } = await pool.query(`
       SELECT
         villages.*,
-        districts.province_id,
+        divisional_secretariats.province_id,
         provinces.name_en AS province_name,
         divisional_secretariats.district_id,
         districts.name_en AS district_name,
@@ -34,7 +35,7 @@ export async function GET() {
       JOIN grama_niladhari_divisions ON grama_niladhari_divisions.id = villages.gnd_id
       JOIN divisional_secretariats ON divisional_secretariats.id = grama_niladhari_divisions.divisional_secretariat_id
       JOIN districts ON districts.id = divisional_secretariats.district_id
-      JOIN provinces ON provinces.id = districts.province_id
+      JOIN provinces ON provinces.id = divisional_secretariats.province_id
       ORDER BY villages.id ASC
     `);
     return NextResponse.json(rows);

@@ -13,6 +13,7 @@ async function divisionalSecretariatMatches(divisionalSecretariatId: number, dis
      JOIN districts ON districts.id = divisional_secretariats.district_id
      WHERE divisional_secretariats.id = $1
        AND divisional_secretariats.district_id = $2
+       AND divisional_secretariats.province_id = $3
        AND districts.province_id = $3`,
     [divisionalSecretariatId, districtId, provinceId],
   );

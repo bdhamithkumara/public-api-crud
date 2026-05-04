@@ -16,7 +16,7 @@ export type District = {
 
 export type DivisionalSecretariat = {
   id: number;
-  province_id?: number;
+  province_id: number;
   province_name?: string;
   district_id: number;
   district_name?: string;

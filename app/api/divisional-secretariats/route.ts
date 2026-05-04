@@ -7,12 +7,11 @@ export async function GET() {
     const { rows } = await pool.query(`
       SELECT
         divisional_secretariats.*,
-        districts.province_id,
         provinces.name_en AS province_name,
         districts.name_en AS district_name
       FROM divisional_secretariats
       JOIN districts ON districts.id = divisional_secretariats.district_id
-      JOIN provinces ON provinces.id = districts.province_id
+      JOIN provinces ON provinces.id = divisional_secretariats.province_id
       ORDER BY divisional_secretariats.id ASC
     `);
     return NextResponse.json(rows);
@@ -31,6 +30,7 @@ export async function POST(request: Request) {
     if (!district.rowCount) return jsonError("District does not belong to the selected province", 400);
 
     const values = [
+      provinceId,
       districtId,
       requiredString(body.ds_en, "English DS name"),
       requiredString(body.ds_si, "Sinhala DS name"),
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     ];
 
     const { rows } = await pool.query(
-      "INSERT INTO divisional_secretariats (district_id, ds_en, ds_si, ds_ta) VALUES ($1, $2, $3, $4) RETURNING *",
+      "INSERT INTO divisional_secretariats (province_id, district_id, ds_en, ds_si, ds_ta) VALUES ($1, $2, $3, $4, $5) RETURNING *",
       values,
     );
 

@@ -9,6 +9,7 @@ async function divisionalSecretariatMatches(divisionalSecretariatId: number, dis
      JOIN districts ON districts.id = divisional_secretariats.district_id
      WHERE divisional_secretariats.id = $1
        AND divisional_secretariats.district_id = $2
+       AND divisional_secretariats.province_id = $3
        AND districts.province_id = $3`,
     [divisionalSecretariatId, districtId, provinceId],
   );
@@ -21,7 +22,7 @@ export async function GET() {
     const { rows } = await pool.query(`
       SELECT
         grama_niladhari_divisions.*,
-        districts.province_id,
+        divisional_secretariats.province_id,
         provinces.name_en AS province_name,
         divisional_secretariats.district_id,
         districts.name_en AS district_name,
@@ -29,7 +30,7 @@ export async function GET() {
       FROM grama_niladhari_divisions
       JOIN divisional_secretariats ON divisional_secretariats.id = grama_niladhari_divisions.divisional_secretariat_id
       JOIN districts ON districts.id = divisional_secretariats.district_id
-      JOIN provinces ON provinces.id = districts.province_id
+      JOIN provinces ON provinces.id = divisional_secretariats.province_id
       ORDER BY grama_niladhari_divisions.id ASC
     `);
     return NextResponse.json(rows);

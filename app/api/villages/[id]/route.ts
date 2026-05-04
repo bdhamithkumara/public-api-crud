@@ -15,6 +15,7 @@ async function gndMatches(gndId: number, divisionalSecretariatId: number, distri
      WHERE grama_niladhari_divisions.id = $1
        AND grama_niladhari_divisions.divisional_secretariat_id = $2
        AND divisional_secretariats.district_id = $3
+       AND divisional_secretariats.province_id = $4
        AND districts.province_id = $4`,
     [gndId, divisionalSecretariatId, districtId, provinceId],
   );

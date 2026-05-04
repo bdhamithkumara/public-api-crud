@@ -16,6 +16,7 @@ export async function PUT(request: Request, { params }: RouteContext) {
     if (!district.rowCount) return jsonError("District does not belong to the selected province", 400);
 
     const values = [
+      provinceId,
       districtId,
       requiredString(body.ds_en, "English DS name"),
       requiredString(body.ds_si, "Sinhala DS name"),
@@ -24,7 +25,7 @@ export async function PUT(request: Request, { params }: RouteContext) {
     ];
 
     const { rows } = await pool.query(
-      "UPDATE divisional_secretariats SET district_id = $1, ds_en = $2, ds_si = $3, ds_ta = $4 WHERE id = $5 RETURNING *",
+      "UPDATE divisional_secretariats SET province_id = $1, district_id = $2, ds_en = $3, ds_si = $4, ds_ta = $5 WHERE id = $6 RETURNING *",
       values,
     );
 

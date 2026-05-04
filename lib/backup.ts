@@ -57,11 +57,15 @@ export async function importBackup(db: Pool, data: BackupData) {
     }
 
     for (const ds of data.divisional_secretariats ?? []) {
+      const provinceId =
+        ds.province_id ??
+        (await client.query("SELECT province_id FROM districts WHERE id = $1", [ds.district_id])).rows[0]?.province_id;
+
       await client.query(
-        `INSERT INTO divisional_secretariats (id, district_id, ds_en, ds_si, ds_ta)
-         VALUES ($1, $2, $3, $4, $5)
+        `INSERT INTO divisional_secretariats (id, province_id, district_id, ds_en, ds_si, ds_ta)
+         VALUES ($1, $2, $3, $4, $5, $6)
          ON CONFLICT (id) DO NOTHING`,
-        [ds.id, ds.district_id, ds.ds_en, ds.ds_si, ds.ds_ta],
+        [ds.id, provinceId, ds.district_id, ds.ds_en, ds.ds_si, ds.ds_ta],
       );
     }
 
