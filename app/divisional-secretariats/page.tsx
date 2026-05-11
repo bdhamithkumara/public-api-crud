@@ -47,6 +47,10 @@ export default function DivisionalSecretariatsPage() {
       columns={columns}
       initialValues={{ province_id: "", district_id: "", ds_en: "", ds_si: "", ds_ta: "" }}
       dependencyEndpoints={{ provinces: "/api/provinces", districts: "/api/districts" }}
+      persistedFields={{
+        storageKey: "divisional-secretariats-selection",
+        fields: ["province_id", "district_id"],
+      }}
     />
   );
 }

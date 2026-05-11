@@ -12,6 +12,10 @@ type ResourcePageProps = {
   columns: TableColumn[];
   initialValues: Record<string, string>;
   dependencyEndpoints?: Record<string, string>;
+  persistedFields?: {
+    storageKey: string;
+    fields: string[];
+  };
 };
 
 function readError(payload: unknown, fallback: string) {
@@ -30,6 +34,7 @@ export function ResourcePage({
   columns,
   initialValues,
   dependencyEndpoints = {},
+  persistedFields,
 }: ResourcePageProps) {
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [values, setValues] = useState<Record<string, string>>(initialValues);
@@ -38,6 +43,34 @@ export function ResourcePage({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [dependencies, setDependencies] = useState<Record<string, Record<string, unknown>[]>>({});
+
+  function valuesWithPersistedFields() {
+    if (!persistedFields || typeof window === "undefined") return initialValues;
+
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(persistedFields.storageKey) ?? "{}") as Record<string, unknown>;
+      return persistedFields.fields.reduce(
+        (nextValues, fieldName) => ({
+          ...nextValues,
+          [fieldName]: saved[fieldName] === undefined || saved[fieldName] === null ? "" : String(saved[fieldName]),
+        }),
+        { ...initialValues },
+      );
+    } catch {
+      return initialValues;
+    }
+  }
+
+  function savePersistedFields(nextValues: Record<string, string>) {
+    if (!persistedFields || typeof window === "undefined") return;
+
+    const saved = persistedFields.fields.reduce<Record<string, string>>((fieldsToSave, fieldName) => {
+      fieldsToSave[fieldName] = nextValues[fieldName] ?? "";
+      return fieldsToSave;
+    }, {});
+
+    window.localStorage.setItem(persistedFields.storageKey, JSON.stringify(saved));
+  }
 
   const resolvedFields = useMemo(() => {
     return fields.map((field) => {
@@ -99,8 +132,13 @@ export function ResourcePage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endpoint]);
 
+  useEffect(() => {
+    setValues(valuesWithPersistedFields());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [persistedFields?.storageKey]);
+
   function resetForm() {
-    setValues(initialValues);
+    setValues(valuesWithPersistedFields());
     setEditingId(null);
   }
 
@@ -132,6 +170,8 @@ export function ResourcePage({
           }
         });
       }
+
+      if (!editingId) savePersistedFields(next);
 
       return next;
     });
